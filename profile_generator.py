@@ -1,9 +1,9 @@
 from langchain.llms import OpenAI
 from langchain.chains import LLMChain
 from langchain.prompts import PromptTemplate
-
 import os
 from dotenv import load_dotenv
+import json
 
 # Load the .env file
 load_dotenv()
@@ -16,12 +16,6 @@ langchain_api_key = os.environ.get('LANGCHAIN_API_KEY')
 langchain_project = os.environ.get('LANGCHAIN_PROJECT')
 pinecone_api_key = os.environ.get('PINECONE_API_KEY')
 pinecone_env = os.environ.get('PINECONE_ENV')
-
-
-import json
-from langchain.llms import OpenAI
-from langchain.chains import LLMChain
-from langchain.prompts import PromptTemplate
 
 def gather_responses():
     # Defining the questions
@@ -44,12 +38,10 @@ def gather_responses():
         })
 
     # Convert Q&A pairs list to JSON-formatted string
-    json_string = json.dumps(qa_pairs, ensure_ascii=False, indent=4)
-    
-    return json_string
+    return json.dumps(qa_pairs, ensure_ascii=False, indent=4)
 
 def generate_output_profile(qa_string):
-    prompt_template = """You are an AI assistant working in social area. 
+    prompt_template = """You are an AI assistant working in the social area. 
     Your mission is to carefully evaluate "question - answer" pairs saved in a python dictionary {qa_string}.
     Provide a well-structured, detailed description of a non-profit profile."""
 
@@ -60,11 +52,13 @@ def generate_output_profile(qa_string):
     )
     return llm_chain({"qa_string": qa_string})
 
-if __name__ == "__main__":
-    # Run the function to gather and store Q&A pairs
+def save_output_profile_to_file():
     qa_string = gather_responses()
-    print("\nStored Q&A Pairs in JSON format:")
-    print(qa_string)
     output_profile = generate_output_profile(qa_string)
-    print("\nGenerated Non-Profit Profile:")
-    print(output_profile)
+    
+    with open("output_profile.txt", "w") as file:
+        file.write(json.dumps(output_profile, indent=4))
+
+if __name__ == "__main__":
+    save_output_profile_to_file()
+    print("Output profile saved to output_profile.txt")
